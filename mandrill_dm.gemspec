@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.required_ruby_version = '>= 2.0'
 
   s.add_dependency 'mail',                    '~> 2.6'
-  s.add_dependency 'mandrill-api',            '~> 1.0.53'
+  s.add_dependency 'mandrill-api-ruby',       '~> 1.0.54'
 
   s.add_development_dependency 'rspec',       '~> 3.4'
   s.add_development_dependency 'rake'
