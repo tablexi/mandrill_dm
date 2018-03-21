@@ -53,7 +53,14 @@ module MandrillDm
     end
 
     def global_merge_vars
-      get_value(:global_merge_vars)
+      value = get_value(:global_merge_vars)
+      return value unless value.is_a?(String)
+      # When given a nested array, the value returned by the Mail instance
+      # may be converted to an invalid Ruby string. To avoid the security issues
+      # of using `eval`, a workaround is to set `global_merge_vars` to a JSON
+      # string when sending the message. When it is read here, the string will
+      # have newlines and carriage returns inserted, for reasons that remain unclear.
+      JSON.parse(value.gsub(/[\r|\n]/, ""))
     end
 
     def headers
@@ -76,7 +83,7 @@ module MandrillDm
     end
 
     def important
-      mail[:important].to_s == 'true' ? true : false
+      mail[:important].to_s == 'true'
     end
 
     def inline_css
@@ -231,7 +238,13 @@ module MandrillDm
     # `mail[:merge_vars].value` returns the variables pre-processed,
     # `instance_variable_get('@value')` returns them exactly as they were passed in
     def get_value(field)
-      mail[field] ? mail[field].instance_variable_get('@value') : nil
+      return nil unless mail[field]
+
+      if mail[field].instance_variable_defined?('@unparsed_value')
+        mail[field].instance_variable_get('@unparsed_value') # mail gem 2.7+
+      else
+        mail[field].instance_variable_get('@value') # mail gem <= 2.6
+      end
     end
 
     # Returns a Mandrill API compatible email address hash

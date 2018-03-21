@@ -141,6 +141,21 @@ describe MandrillDm::Message do
       expect(message.global_merge_vars).to eq(global_merge_vars)
     end
 
+    it 'when the mail instance returns an invalid JSON string' do
+      global_merge_vars = "[{\"name\":\"testing\",\"content\":[{\"key1\":\"value\r\n 1\"},{\"key2\":\"value\r\n 2\"}]}]"
+      mail = new_mail(global_merge_vars: global_merge_vars)
+      message = described_class.new(mail)
+      expect(message.global_merge_vars).to eq([
+        {
+          "name" => "testing",
+          "content" => [
+            { "key1" => "value 1" },
+            { "key2" => "value 2" },
+          ]
+        }
+      ])
+    end
+
     it 'does not take global_merge_vars value' do
       mail = new_mail
       message = described_class.new(mail)
